@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Home, Trophy, Book, BookOpen, User, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useTranslation } from "./language-provider";
 
 interface NavigationProps {
   currentScreen: string;
@@ -9,13 +10,14 @@ interface NavigationProps {
 
 export function Navigation({ currentScreen, onNavigate }: NavigationProps) {
   const { theme, setTheme } = useTheme();
+  const { t } = useTranslation();
 
   const navItems = [
-    { id: "dashboard", icon: Home, label: "Home" },
-    { id: "tasks", icon: Trophy, label: "Tasks" },
-    { id: "library", icon: Book, label: "Library" },
-    { id: "presentation", icon: BookOpen, label: "Learn" },
-    { id: "profile", icon: User, label: "Profile" },
+    { id: "dashboard", icon: Home, label: t('home') },
+    { id: "tasks", icon: Trophy, label: t('tasks') },
+    { id: "library", icon: Book, label: t('library') },
+    { id: "presentation", icon: BookOpen, label: t('learn') },
+    { id: "profile", icon: User, label: t('profile') },
   ];
 
   return (

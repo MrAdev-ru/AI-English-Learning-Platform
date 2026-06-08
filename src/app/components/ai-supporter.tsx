@@ -35,19 +35,31 @@ export function AiSupporter({ level, xp, onBack }: AiSupporterProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `Hello! I'm your AI English coach 🤖\n\nYou are currently at **${level}** with **${xp} XP**. Ask me anything about your progress, grammar, vocabulary, or IELTS tips!`
+      content: `Hello! I'm your AI Language teacher 🤖\n\nYou are currently at **${level}** with **${xp} XP**. Ask me anything about your progress, grammar, vocabulary, or IELTS tips!`
     }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState("");
+  const [apiProvider, setApiProvider] = useState<'openai' | 'gemini'>('openai');
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
-  const [savedApiKey, setSavedApiKey] = useState("AQ.Ab8RN6Ls7npHYOn-4YyluzW7skrr3o2CsWOG-3UYiVb7F3qWNA");
+  const [savedApiKey, setSavedApiKey] = useState("");
+  const [savedProvider, setSavedProvider] = useState<'openai' | 'gemini' | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // load saved API key and provider from localStorage
+  useEffect(() => {
+    try {
+      const key = localStorage.getItem('aiApiKey') || '';
+      const provider = (localStorage.getItem('aiProvider') as 'openai' | 'gemini' | null) || null;
+      if (key) setSavedApiKey(key);
+      if (provider) setSavedProvider(provider);
+    } catch (e) {}
+  }, []);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -56,11 +68,11 @@ export function AiSupporter({ level, xp, onBack }: AiSupporterProps) {
     setMessages(prev => [...prev, { role: "user", content: userMsg }]);
     setIsLoading(true);
 
-    if (savedApiKey) {
+    if (savedApiKey && savedProvider === 'gemini') {
       // Real Gemini API call
       try {
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${savedApiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro:generateContent?key=${savedApiKey}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -79,6 +91,32 @@ export function AiSupporter({ level, xp, onBack }: AiSupporterProps) {
       } catch {
         toast.error("API xatosi. Tokeningizni tekshiring.");
         setMessages(prev => [...prev, { role: "assistant", content: "API connection error. Please check your Gemini API token." }]);
+      }
+    } else if (savedApiKey && savedProvider === 'openai') {
+      // OpenAI Chat Completions
+      try {
+        const payload = {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            { role: 'system', content: `You are an AI English teacher. The student is at ${level} CEFR/IELTS level with ${xp} XP.` },
+            { role: 'user', content: userMsg }
+          ],
+          max_tokens: 500,
+        };
+        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${savedApiKey}`,
+          },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        const reply = data?.choices?.[0]?.message?.content || 'Sorry, no response from OpenAI.';
+        setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      } catch (e) {
+        toast.error('OpenAI API error. Check your key.');
+        setMessages(prev => [...prev, { role: 'assistant', content: 'OpenAI connection error. Please check your API key.' }]);
       }
     } else {
       // Simulated response
@@ -118,7 +156,7 @@ export function AiSupporter({ level, xp, onBack }: AiSupporterProps) {
               <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">AI English Coach</h2>
               <p className="text-xs text-green-500 font-semibold flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                {savedApiKey ? "Gemini AI Active" : "Simulation Mode"}
+                {savedApiKey ? (savedProvider === 'openai' ? 'OpenAI Active' : 'Gemini AI Active') : 'Simulation Mode'}
               </p>
             </div>
           </div>
@@ -222,29 +260,42 @@ export function AiSupporter({ level, xp, onBack }: AiSupporterProps) {
                 </button>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" className="text-blue-500 underline">Google AI Studio</a> dan API tokeningizni oling va pastga kiriting.
+                API provayderni tanlang va tokenni kiriting. OpenAI foydalanmoqchi bo'lsangiz, <a href="https://platform.openai.com/account/api-keys" target="_blank" rel="noreferrer" className="text-blue-500 underline">OpenAI API keys</a> dan kalit yarating.
               </p>
+              <div className="mb-3">
+                <label className="text-sm font-medium mb-2 block">Provider</label>
+                <div className="flex gap-3">
+                  <label className={`px-3 py-2 rounded-xl cursor-pointer ${apiProvider === 'openai' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
+                    <input type="radio" name="provider" value="openai" checked={apiProvider === 'openai'} onChange={() => setApiProvider('openai')} className="hidden" /> OpenAI
+                  </label>
+                  <label className={`px-3 py-2 rounded-xl cursor-pointer ${apiProvider === 'gemini' ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`}>
+                    <input type="radio" name="provider" value="gemini" checked={apiProvider === 'gemini'} onChange={() => setApiProvider('gemini')} className="hidden" /> Gemini
+                  </label>
+                </div>
+              </div>
               <input
                 type="password"
                 value={apiKey}
                 onChange={e => setApiKey(e.target.value)}
-                placeholder="Gemini API Token..."
+                placeholder={apiProvider === 'openai' ? 'OpenAI API Key...' : 'Gemini API Token...'}
                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none text-sm mb-4"
               />
               <button
                 onClick={() => {
                   setSavedApiKey(apiKey);
+                  setSavedProvider(apiProvider);
+                  try { localStorage.setItem('aiApiKey', apiKey); localStorage.setItem('aiProvider', apiProvider); } catch (e) {}
                   setShowApiKeyModal(false);
-                  toast.success(apiKey ? "Gemini AI ulandi! Haqiqiy javoblar faol." : "Token o'chirildi. Simulatsiya rejimiga qaytildi.");
+                  toast.success(apiKey ? `${apiProvider === 'openai' ? 'OpenAI' : 'Gemini'} ulandi! Haqiqiy javoblar faol.` : 'Token o\'chirildi. Simulatsiya rejimiga qaytildi.');
                 }}
                 className="w-full py-3 rounded-xl bg-[#4285f4] text-white font-bold hover:bg-blue-600 transition-colors"
               >
                 Saqlash
               </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+             </motion.div>
+           </div>
+         )}
+       </AnimatePresence>
     </div>
   );
 }

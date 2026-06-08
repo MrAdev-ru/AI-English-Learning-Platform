@@ -20,8 +20,15 @@ const ieltsScores = [
   { code: "8.5-9.0", name: "Expert User", desc: "Fully operational and accurate" },
 ];
 
+const toeflScores = [
+  { code: "40-59", name: "Developing", desc: "Building academic communication skills" },
+  { code: "60-78", name: "Intermediate", desc: "Ready for structured TOEFL practice" },
+  { code: "79-94", name: "High Intermediate", desc: "University-entry score preparation" },
+  { code: "95-120", name: "Advanced", desc: "Strong academic English performance" },
+];
+
 interface OnboardingProps {
-  onLevelSelect: (level: string) => void;
+  onLevelSelect: (level: string, exam: Exclude<SystemType, null>) => void;
 }
 
 export function Onboarding({ onLevelSelect }: OnboardingProps) {
@@ -48,7 +55,7 @@ export function Onboarding({ onLevelSelect }: OnboardingProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            onClick={() => onLevelSelect(`${prefix} ${level.code}`)}
+            onClick={() => onLevelSelect(`${prefix} ${level.code}`, prefix as Exclude<SystemType, null>)}
             className="group relative p-6 rounded-3xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 hover:border-indigo-200 hover:shadow-lg dark:border-gray-700 dark:hover:border-indigo-600 transition-all text-left"
           >
             <div className="flex items-center justify-between mb-3">
@@ -73,6 +80,7 @@ export function Onboarding({ onLevelSelect }: OnboardingProps) {
     <div className="min-h-screen flex items-center justify-center p-6 bg-[#f8fbff] dark:bg-gray-900 font-sans">
       <div className="w-full max-w-6xl mx-auto">
         <div className="text-center mb-12">
+          <img src="/logo.png" alt="AI English Learning Platform" className="w-20 h-20 object-contain mx-auto mb-5" />
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-[#1a73e8] dark:text-[#669df6]">
             Choose Your Learning Path
           </h1>
@@ -157,16 +165,14 @@ export function Onboarding({ onLevelSelect }: OnboardingProps) {
               </button>
 
               {/* TOEFL Card */}
-              <div
-                className="relative p-8 rounded-[2rem] bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 text-left opacity-90"
+              <button
+                onClick={() => setSelectedSystem("TOEFL")}
+                className="relative p-8 rounded-[2rem] bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 text-left hover:shadow-xl transition-shadow group focus:outline-none"
               >
-                <div className="absolute -top-3 right-8 px-4 py-1.5 rounded-full bg-[#fbbc05] text-white text-xs font-bold shadow-md z-10">
-                  Under Maintenance
-                </div>
                 <div className="absolute top-8 right-8">
-                  <ChevronRight className="w-5 h-5 text-gray-300" />
+                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[#d93025] transition-colors" />
                 </div>
-                <div className="w-16 h-16 rounded-2xl bg-[#d93025] flex items-center justify-center mb-6 opacity-90">
+                <div className="w-16 h-16 rounded-2xl bg-[#d93025] flex items-center justify-center mb-6">
                   <BookOpen className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">TOEFL</h2>
@@ -189,13 +195,14 @@ export function Onboarding({ onLevelSelect }: OnboardingProps) {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </button>
 
             </motion.div>
           )}
 
           {selectedSystem === "CEFR" && renderLevels(cefrLevels, "CEFR")}
           {selectedSystem === "IELTS" && renderLevels(ieltsScores, "IELTS")}
+          {selectedSystem === "TOEFL" && renderLevels(toeflScores, "TOEFL")}
         </AnimatePresence>
       </div>
     </div>

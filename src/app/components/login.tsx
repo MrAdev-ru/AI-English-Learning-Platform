@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Mail, Send, ArrowLeft, KeyRound, Cpu } from "lucide-react";
+import { Mail, Send, ArrowLeft, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
 interface LoginProps {
@@ -74,8 +74,8 @@ export function Login({ onLogin }: LoginProps) {
         className="w-full max-w-md bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-[2rem] shadow-2xl border border-white/50 dark:border-gray-700/50 p-8 sm:p-10 relative z-10"
       >
         <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 bg-gradient-to-br from-[#4285f4] to-[#00c4b4] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 mb-6">
-            <Cpu className="w-8 h-8 text-white" />
+          <div className="w-20 h-20 bg-white dark:bg-gray-900 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 mb-6 border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <img src="/logo.png" alt="AI English Learning Platform" className="w-16 h-16 object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Xush kelibsiz!</h1>
           <p className="text-gray-500 dark:text-gray-400 text-center font-medium">Platformaga kirish uchun usulni tanlang</p>

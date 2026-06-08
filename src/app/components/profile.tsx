@@ -4,49 +4,35 @@ import { Trophy, Star, Target, Calendar, Book, TrendingUp, Edit2, X, Bot } from 
 
 interface ProfileProps {
   level: string;
+  examType: string;
   xp: number;
+  onExamChange?: (exam: string) => void;
   onNavigate?: (screen: string) => void;
 }
 
-export function Profile({ level, xp, onNavigate }: ProfileProps) {
+export function Profile({ level, examType, xp, onExamChange, onNavigate }: ProfileProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Preferred exam (cefr | ielts | toefl) persisted in localStorage
   const [selectedExam, setSelectedExam] = useState<string>(() => {
-    try { return localStorage.getItem("preferredExam") || "cefr"; } catch { return "cefr"; }
-  });
-
-  // AI (Gemini) settings persisted in localStorage
-  const [aiEnabled, setAiEnabled] = useState<boolean>(() => {
-    try { return localStorage.getItem("aiEnabled") === "true"; } catch { return false; }
-  });
-  const [aiApiKey, setAiApiKey] = useState<string>(() => {
-    try { return localStorage.getItem("geminiApiKey") || ""; } catch { return ""; }
+    try { return localStorage.getItem("preferredExam") || examType || "CEFR"; } catch { return examType || "CEFR"; }
   });
 
   useEffect(() => {
     try {
       localStorage.setItem("preferredExam", selectedExam);
-      localStorage.setItem("aiEnabled", String(aiEnabled));
-      localStorage.setItem("geminiApiKey", aiApiKey);
     } catch (e) {}
-  }, [selectedExam, aiEnabled, aiApiKey]);
+  }, [selectedExam]);
 
-  // Helper to call server-side Gemini proxy. Expects an API route /api/gemini to be implemented
-  async function callAi(prompt: string) {
-    if (!aiEnabled) throw new Error("AI Coach disabled");
-    if (!aiApiKey) throw new Error("Missing API key");
-    const res = await fetch("/api/gemini", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${aiApiKey}`,
-      },
-      body: JSON.stringify({ prompt }),
-    });
-    if (!res.ok) throw new Error("AI request failed");
-    return res.json();
-  }
+  useEffect(() => {
+    setSelectedExam(examType || "CEFR");
+  }, [examType]);
+
+  const handleExamSelect = (exam: string) => {
+    setSelectedExam(exam);
+    onExamChange?.(exam);
+  };
+
+  const normalizedExam = selectedExam.toUpperCase();
 
   return (
     <div className="min-h-screen bg-[#f4f7fb] dark:bg-gray-900 py-10 px-6 font-sans text-gray-900 dark:text-gray-100">
@@ -66,8 +52,8 @@ export function Profile({ level, xp, onNavigate }: ProfileProps) {
           </button>
 
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
-            <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-[#4285f4] to-[#0ea5e9] flex items-center justify-center text-white text-4xl font-bold">
-              J
+            <div className="w-24 h-24 rounded-[2rem] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 flex items-center justify-center overflow-hidden shadow-sm">
+              <img src="/logo.png" alt="AI English Learning Platform" className="w-20 h-20 object-contain" />
             </div>
 
             <div>
@@ -75,9 +61,9 @@ export function Profile({ level, xp, onNavigate }: ProfileProps) {
               <p className="text-gray-500 dark:text-gray-400 mb-4 text-[15px]">john.doe@example.com</p>
               <div className="flex flex-wrap gap-2">
                 {/* Dynamic exam badge based on user's selection */}
-                {selectedExam === 'ielts' ? (
+                {normalizedExam === "IELTS" ? (
                   <span className="px-4 py-1.5 bg-[#f97316] text-white text-sm font-semibold rounded-lg">IELTS Student</span>
-                ) : selectedExam === 'toefl' ? (
+                ) : normalizedExam === "TOEFL" ? (
                   <span className="px-4 py-1.5 bg-[#0ea5e9] text-white text-sm font-semibold rounded-lg">TOEFL Student</span>
                 ) : (
                   <span className="px-4 py-1.5 bg-[#00c4b4] text-white text-sm font-semibold rounded-lg">CEFR Student</span>
@@ -269,21 +255,11 @@ export function Profile({ level, xp, onNavigate }: ProfileProps) {
                 {/* Preferred exam selection for dynamic badge and AI context */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Exam</label>
-                  <select value={selectedExam} onChange={e => setSelectedExam(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none">
-                    <option value="cefr">CEFR</option>
-                    <option value="ielts">IELTS</option>
-                    <option value="toefl">TOEFL</option>
+                  <select value={selectedExam} onChange={e => handleExamSelect(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none">
+                    <option value="CEFR">CEFR</option>
+                    <option value="IELTS">IELTS</option>
+                    <option value="TOEFL">TOEFL</option>
                   </select>
-                </div>
-
-                {/* AI (Gemini) settings */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">AI Coach (Gemini) API Key</label>
-                  <input type="password" value={aiApiKey} onChange={e => setAiApiKey(e.target.value)} placeholder="Paste your Gemini API key" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none" />
-                  <div className="mt-2 flex items-center gap-3">
-                    <input id="aiEnabled" type="checkbox" checked={aiEnabled} onChange={e => setAiEnabled(e.target.checked)} className="w-4 h-4" />
-                    <label htmlFor="aiEnabled" className="text-sm text-gray-600">Enable AI Coach (will be used for question prompts)</label>
-                  </div>
                 </div>
                 <button
                   onClick={() => setIsSettingsOpen(false)}

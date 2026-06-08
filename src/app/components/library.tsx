@@ -33,10 +33,8 @@ export function Library() {
       title: "Cambridge IELTS 11",
       author: "Cambridge",
       difficulty: "Advanced",
-      // The original PDF is in the telegram-bot folder in the workspace. Point to that path
-      // and use encodeURI when rendering to avoid issues with spaces and brackets.
       fileName: "Cambridge IELTS 11 [@cambridgematerials].pdf",
-      fileUrl: "/telegram-bot/Cambridge IELTS 11 [@cambridgematerials].pdf",
+      fileUrl: "/library/Cambridge%20IELTS%2011%20%5B%40cambridgematerials%5D.pdf",
     }
   ]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -294,7 +292,7 @@ export function Library() {
                 </div>
                 <div className="flex-1 bg-gray-200 dark:bg-gray-900">
                   <iframe 
-                    src={encodeURI(previewBook.fileUrl)} 
+                    src={previewBook.fileUrl} 
                     className="w-full h-full border-none"
                     title={`Preview of ${previewBook.title}`}
                   />

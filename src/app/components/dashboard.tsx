@@ -59,12 +59,17 @@ export function Dashboard({ level, xp, onNavigate }: DashboardProps) {
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold mb-1 text-gray-800 dark:text-gray-100">
-                Welcome back!
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Continue your learning journey
-              </p>
+              <div className="flex items-center gap-3">
+                <img src="/logo.png" alt="AI English Learning Platform" className="w-12 h-12 object-contain" />
+                <div>
+                  <h1 className="text-3xl font-bold mb-1 text-gray-800 dark:text-gray-100">
+                    Welcome back!
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Continue your learning journey
+                  </p>
+                </div>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="px-4 py-2 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg border border-gray-200/50 dark:border-gray-700/50">
