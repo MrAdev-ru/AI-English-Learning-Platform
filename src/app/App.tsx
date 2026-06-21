@@ -14,6 +14,9 @@ import { Skills } from "./components/skills";
 import { Blog } from "./components/blog";
 import { Subscription } from "./components/subscription";
 import { Leaderboard } from "./components/leaderboard";
+import { AdminPanel } from "./components/admin-panel";
+import { SuperAdmin } from "./components/super-admin";
+import { type UserRole } from "./components/login";
 import { Toaster, toast } from "sonner";
 
 const getLocal = <T,>(key: string, fallback: T): T => {
@@ -26,6 +29,7 @@ const setLocal = (key: string, value: unknown) => {
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated]     = useState(false);
+  const [userRole, setUserRole]                   = useState<UserRole>("user");
   const [selectedLevel, setSelectedLevel]         = useState<string | null>(null);
   const [selectedExam, setSelectedExam]           = useState<string>(() => getLocal("preferredExam", "CEFR"));
   const [currentScreen, setCurrentScreen]         = useState("dashboard");
@@ -44,9 +48,15 @@ export default function App() {
   useEffect(() => { setLocal("userPlan", plan); }, [plan]);
   useEffect(() => { setLocal(todayKey, skillsTriesUsed); }, [skillsTriesUsed]);
 
-  const handleAuth = () => {
+  const handleAuth = (role: UserRole) => {
+    setUserRole(role);
     setIsAuthenticated(true);
     toast.success("Xush kelibsiz! O'rganishda davom eting.");
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUserRole("user");
   };
 
   const handleExamChange = (exam: string) => {
@@ -86,6 +96,24 @@ export default function App() {
     return (
       <ThemeProvider>
         <Login onLogin={handleAuth} />
+        <Toaster position="top-center" richColors />
+      </ThemeProvider>
+    );
+  }
+
+  if (userRole === "super_admin") {
+    return (
+      <ThemeProvider>
+        <SuperAdmin onLogout={handleLogout} />
+        <Toaster position="top-center" richColors />
+      </ThemeProvider>
+    );
+  }
+
+  if (userRole === "admin") {
+    return (
+      <ThemeProvider>
+        <AdminPanel onLogout={handleLogout} />
         <Toaster position="top-center" richColors />
       </ThemeProvider>
     );

@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Mail, Send, ArrowLeft, KeyRound } from "lucide-react";
+import { Mail, Send, ArrowLeft, KeyRound, User, ShieldCheck, Crown } from "lucide-react";
 import { toast } from "sonner";
 
+export type UserRole = "user" | "admin" | "super_admin";
+
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (role: UserRole) => void;
 }
 
 type AuthMethod = "email" | "telegram" | null;
-type AuthStep = "select_method" | "input_details" | "verify_code";
+type AuthStep = "select_method" | "input_details" | "verify_code" | "select_role";
 
 export function Login({ onLogin }: LoginProps) {
   const [method, setMethod] = useState<AuthMethod>(null);
@@ -24,7 +26,7 @@ export function Login({ onLogin }: LoginProps) {
 
   const handleGoogleLogin = () => {
     toast.success("Muvaffaqiyatli tizimga kirdingiz!");
-    onLogin();
+    setStep("select_role");
   };
 
   const handleSendCode = (e: React.FormEvent) => {
@@ -57,9 +59,14 @@ export function Login({ onLogin }: LoginProps) {
       toast.error("Iltimos, 4 xonali kodni kiriting.");
       return;
     }
-    // Simulation: Any 4 digit code works
     toast.success("Muvaffaqiyatli tasdiqlandi!");
-    onLogin();
+    setStep("select_role");
+  };
+
+  const handleRoleSelect = (role: UserRole) => {
+    const labels: Record<UserRole, string> = { user: "Foydalanuvchi", admin: "Admin", super_admin: "Super Admin" };
+    toast.success(`${labels[role]} sifatida kirildi!`);
+    onLogin(role);
   };
 
   return (
@@ -207,6 +214,60 @@ export function Login({ onLogin }: LoginProps) {
                 className="w-full py-4 rounded-2xl bg-[#00c4b4] text-white font-bold hover:bg-teal-600 transition-colors shadow-lg shadow-teal-500/30"
               >
                 Tasdiqlash va Kirish
+              </button>
+            </motion.div>
+          )}
+
+          {step === "select_role" && (
+            <motion.div
+              key="role"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="space-y-4"
+            >
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Rolni tanlang</h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Platformaga qaysi rol bilan kirasiz?</p>
+              </div>
+
+              <button
+                onClick={() => handleRoleSelect("user")}
+                className="w-full flex items-center gap-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl p-4 hover:border-blue-400 hover:shadow-md transition-all text-left"
+              >
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <User className="w-6 h-6 text-blue-500" />
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 dark:text-white">Foydalanuvchi</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Til o'rganish uchun standart kirish</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => handleRoleSelect("admin")}
+                className="w-full flex items-center gap-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl p-4 hover:border-purple-400 hover:shadow-md transition-all text-left"
+              >
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/40 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <ShieldCheck className="w-6 h-6 text-purple-500" />
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 dark:text-white">Admin (Moderator)</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Kutubxona va blog boshqaruvi</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => handleRoleSelect("super_admin")}
+                className="w-full flex items-center gap-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl p-4 hover:border-yellow-400 hover:shadow-md transition-all text-left"
+              >
+                <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/40 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Crown className="w-6 h-6 text-yellow-500" />
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 dark:text-white">Super Admin (CEO)</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">To'liq boshqaruv va analitika</p>
+                </div>
               </button>
             </motion.div>
           )}
