@@ -169,7 +169,7 @@ export default function App() {
           />
         );
       case "library":
-        return <Library />;
+        return <Library readOnly={true} />;
       case "blog":
         return <Blog onBack={() => setCurrentScreen("dashboard")} />;
       case "subscription":
